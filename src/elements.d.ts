@@ -1,10 +1,28 @@
 declare global{
+    type Primitive =
+        | bigint
+        | boolean
+        | null
+        | number
+        | string
+        | symbol
+        | undefined;
+
+    type JSONValue = Primitive | JSONObject | JSONArray;
+
+    interface JSONObject {
+        [key: string]: JSONValue;
+    }
+
+    interface JSONArray extends Array<JSONValue> { }
+
     interface Element {
-        get allAttributes(): Object
+        get allAttributes(): JSONObject
+        set allAttributes(attributes: JSONObject)
 
-        setStyles(styles: Object): void
+        setStyles(styles: JSONObject): void
 
-        changeVisibility(isVisible: Boolean): void
+        changeVisibility(isVisible: boolean): void
 
     }
 }

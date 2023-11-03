@@ -12,15 +12,16 @@ function replaceOneSelect(select: Element){
         alert('click')
     })
 
-    element.setStyles({background: 'red', color: 'blue'})
+    element.setStyles({background: 'red', color: 'blue', cursor: 'pointer', class: 'test'})
     element.innerHTML="Hello super element nouveau!"
 
     //console.log(getAllAttributes(select.parentElement));
     //showHideElement(select.parentElement, false)
 
      console.log(select.allAttributes)
+    select.allAttributes={class: 'hello', style:{ background: 'red', color: 'blue'}, data: { test: 'test'}};
 
-    select.changeVisibility(false);
+    //select.changeVisibility(false);
     select.parentElement.appendChild(element);
 
 }
