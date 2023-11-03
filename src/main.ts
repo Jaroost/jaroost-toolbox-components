@@ -1,11 +1,28 @@
-import {createElement, showHideElement} from "./element-tools.ts";
+import {
+    createElement
+} from "./element-tools.ts";
+import "./elements"
 
 function replaceOneSelect(select: Element){
     //showHideElement(select, false);
 
-    let element=createElement('div');
+    let element=createElement('input');
+    element.className="form-control"
+    element.addEventListener('click', function(){
+        alert('click')
+    })
+
+    element.setStyles({background: 'red', color: 'blue'})
     element.innerHTML="Hello super element nouveau!"
-    document.body.append(element);
+
+    //console.log(getAllAttributes(select.parentElement));
+    //showHideElement(select.parentElement, false)
+
+     console.log(select.allAttributes)
+
+    select.changeVisibility(false);
+    select.parentElement.appendChild(element);
+
 }
 
 function replaceSelects(){
