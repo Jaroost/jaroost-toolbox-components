@@ -19,7 +19,13 @@ function replaceOneSelect(select: Element){
     //showHideElement(select.parentElement, false)
 
      console.log(select.allAttributes)
-    select.allAttributes={class: 'hello', style:{ background: 'red', color: 'blue'}, data: { test: 'test'}};
+    select.allAttributes={'+class': 'hello', '-class': 'picker',
+        style:{ background: 'red', color: 'blue'},
+        data: { test: 'test', test2: 'test2'}
+        , "data-test3": 'hello',
+        id: 'test',
+    name: 'blabla'};
+
 
     //select.changeVisibility(false);
     select.parentElement.appendChild(element);
