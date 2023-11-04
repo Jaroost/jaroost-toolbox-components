@@ -37,9 +37,9 @@ declare global{
          */
         set allAttributes(attributes: JSONObject)
 
-        setStyles(styles: JSONObject): void
-
         changeVisibility(isVisible: boolean): void
+
+        isVisible():boolean;
 
     }
 }

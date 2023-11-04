@@ -2,33 +2,55 @@ import {
     createElement
 } from "./element-tools.ts";
 import "./elements"
+import "./picker-styles.css"
 
 function replaceOneSelect(select: Element){
     //showHideElement(select, false);
 
-    let element=createElement('input');
-    element.className="form-control"
+    let allOptions=[]
+    let options=select.querySelectorAll("option")
+    for(let option: Element of options){
+        console.log(option.allAttributes)
+        allOptions.push({
+            label: option.innerHTML,
+            value: option.value,
+            selected: option.allAttributes.selected==''
+        })
+    }
+    console.log(allOptions)
+
+    let panel=createElement('div')
+    panel.allAttributes={
+        class: 'picker-panel',
+    }
+    for(let option of allOptions){
+        let div=createElement('div');
+        div.innerHTML=option.label;
+        div.allAttributes={class: option.selected ? 'active picker-option': 'picker-option', data:{ value: option.value}};
+        panel.appendChild(div);
+    }
+    //panel.changeVisibility(false);
+
+    let element=createElement('button');
+    element.allAttributes={
+        class: 'form-control',
+        type: 'button',
+        style:{
+            'text-align': 'left'
+        }
+    }
     element.addEventListener('click', function(){
-        alert('click')
+        panel.changeVisibility(!panel.isVisible());
     })
 
-    element.setStyles({background: 'red', color: 'blue', cursor: 'pointer', class: 'test'})
+
+
+    // element.setStyles({background: 'red', color: 'blue', cursor: 'pointer', class: 'test'})
     element.innerHTML="Hello super element nouveau!"
 
-    //console.log(getAllAttributes(select.parentElement));
-    //showHideElement(select.parentElement, false)
-
-     console.log(select.allAttributes)
-    select.allAttributes={'+class': 'hello', '-class': 'picker',
-        style:{ background: 'red', color: 'blue'},
-        data: { test: 'test', test2: 'test2'}
-        , "data-test3": 'hello',
-        id: 'test',
-    name: 'blabla'};
-
-
-    //select.changeVisibility(false);
+    select.changeVisibility(false);
     select.parentElement.appendChild(element);
+    select.parentElement.appendChild(panel);
 
 }
 

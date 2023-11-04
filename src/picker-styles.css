@@ -1,0 +1,19 @@
+.picker-panel{
+  border-radius: 5px;
+  padding: 12px;
+  position: absolute;
+  top: calc(3.5rem + calc(var(--bs-border-width) * 2));
+  left: 0;
+  width: 100%;
+  background: white;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  z-index: 10;
+}
+
+.picker-option{
+  cursor: pointer;
+  padding: 3px;
+}
+.picker-option:hover{
+  background: var(--bs-primary);
+}

@@ -21,19 +21,17 @@ function setAttributesToElement(element:Element, attributes:JSONObject){
 Object.defineProperty(Element.prototype, "allAttributes", {
     get:function getAttributes(){
         return this.getAttributeNames().reduce((acc, name) => {
-            return {...acc, [name]: this.getAttribute(name)};
+            return {...acc, [name]: name=='style' ? window.getComputedStyle(this): this.getAttribute(name)};
         }, {});
     },
     set: function setAttributes(attributes:JSONObject){
         setAttributesToElement(this, attributes)
     }
 });
-Element.prototype.setStyles=function(styles:Object){
-    for(const [attribute, value] of Object.entries(styles)){
-        this.style[attribute]=value;
-    }
-}
 Element.prototype.changeVisibility=function(isVisible:Boolean){
-    this.setStyles({display: isVisible ? 'block' : 'none'});
+    this.allAttributes={style: {display: isVisible ? 'block' : 'none'}}
 };
+Element.prototype.isVisible=function(){
+    return this.allAttributes.style.display=='block'
+}
 
