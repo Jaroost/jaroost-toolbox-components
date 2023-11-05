@@ -15,5 +15,9 @@
   padding: 3px;
 }
 .picker-option:hover{
+  background: var(--bs-light);
+}
+.picker-option.active{
   background: var(--bs-primary);
+  color: var(--bs-light);
 }

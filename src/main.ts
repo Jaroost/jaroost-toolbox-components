@@ -4,53 +4,163 @@ import {
 import "./elements"
 import "./picker-styles.css"
 
-function replaceOneSelect(select: Element){
-    //showHideElement(select, false);
+class PickerOption{
+    originalOption: Element
+    label: string
+    value: any
+    isSelected: boolean
 
-    let allOptions=[]
-    let options=select.querySelectorAll("option")
-    for(let option: Element of options){
-        console.log(option.allAttributes)
-        allOptions.push({
-            label: option.innerHTML,
-            value: option.value,
-            selected: option.allAttributes.selected==''
+    constructor(originalOption:Element) {
+        this.originalOption=originalOption;
+        this.setValuesWithOriginalElement();
+    }
+
+    private setValuesWithOriginalElement(){
+        this.label=this.originalOption.innerHTML;
+        this.value=this.originalOption.value;
+        this.isSelected=this.originalOption.allAttributes.selected==''
+    }
+}
+class PickerState{
+    isMultiSelect: boolean
+    originalSelect: Element
+    panel:Element
+    button: Element
+    allOptions: PickerOption[]
+    get selectedOptions():PickerOption[]{
+        return this.allOptions.filter(o => o.isSelected)
+    }
+
+    constructor(originalSelect:Element) {
+        this.originalSelect=originalSelect;
+        this.fillAlOptions();
+        this.createButton();
+        this.updateButtonLabel();
+        this.createPanel();
+        this.updatePanel();
+    }
+
+    createButton(){
+        this.button=createElement('button');
+        this.button.allAttributes={
+            class: 'form-control',
+            type: 'button',
+            style:{
+                'text-align': 'left'
+            }
+        }
+        let that=this
+        this.button.addEventListener('click', function(){
+            that.panel.changeVisibility(!that.panel.isVisible());
         })
+        this.originalSelect.parentElement.appendChild(this.button);
+        this.originalSelect.changeVisibility(false);
     }
-    console.log(allOptions)
 
-    let panel=createElement('div')
-    panel.allAttributes={
-        class: 'picker-panel',
+    updateButtonLabel(){
+        this.button.innerHTML=this.allOptions.find(o=>o.isSelected).label
     }
-    for(let option of allOptions){
-        let div=createElement('div');
-        div.innerHTML=option.label;
-        div.allAttributes={class: option.selected ? 'active picker-option': 'picker-option', data:{ value: option.value}};
-        panel.appendChild(div);
-    }
-    //panel.changeVisibility(false);
 
-    let element=createElement('button');
-    element.allAttributes={
-        class: 'form-control',
-        type: 'button',
-        style:{
-            'text-align': 'left'
+    fillAlOptions(){
+        let options=this.originalSelect.querySelectorAll("option")
+        this.allOptions=[]
+        for(let option: Element of options){
+            this.allOptions.push(new PickerOption(option))
         }
     }
-    element.addEventListener('click', function(){
-        panel.changeVisibility(!panel.isVisible());
-    })
+
+    searchInput: Element
+    createPanel(){
+        this.panel=createElement('div')
+        this.panel.allAttributes={
+            class: 'picker-panel',
+            style:{
+                display: 'none'
+            }
+        }
+        this.searchInput=createElement('input')
+        this.panel.appendChild(this.searchInput);
+        let that=this
+        this.panel.addEventListener('click', function(event){
+            that.allOptions.map(o=>o.isSelected=false);
+            let selectedOption=that.allOptions.find(o=>o.value===event.target.dataset.value)
+            selectedOption.isSelected=true;
+            that.updatePanel();
+            that.updateButtonLabel();
+            that.panel.changeVisibility(false);
+        })
+        this.originalSelect.parentElement.appendChild(this.panel);
+    }
+
+    updatePanel(){
+        this.panel.innerHTML=''
+        for(let option of this.allOptions){
+            let div=createElement('div');
+            div.innerHTML=option.label;
+            div.allAttributes={class: option.isSelected ? 'active picker-option': 'picker-option', data:{ value: option.value}};
+            this.panel.appendChild(div);
+        }
+    }
+
+    removePanel(){
+        this.panel.remove();
+        this.panel=null;
+    }
+}
+
+function replaceOneSelect(select: Element){
+    new PickerState(select);
+    //showHideElement(select, false);
+
+    // let allOptions=[]
+    // let options=select.querySelectorAll("option")
+    // for(let option: Element of options){
+    //     console.log(option.allAttributes)
+    //     allOptions.push({
+    //         label: option.innerHTML,
+    //         value: option.value,
+    //         selected: option.allAttributes.selected==''
+    //     })
+    // }
+
+    // let panel=createElement('div')
+    // panel.allAttributes={
+    //     class: 'picker-panel',
+    // }
+    // for(let option of allOptions){
+    //     let div=createElement('div');
+    //     div.innerHTML=option.label;
+    //     div.allAttributes={class: option.selected ? 'active picker-option': 'picker-option', data:{ value: option.value}};
+    //     panel.appendChild(div);
+    // }
+    //panel.changeVisibility(false);
+
+    // let element=createElement('button');
+    // element.allAttributes={
+    //     class: 'form-control',
+    //     type: 'button',
+    //     style:{
+    //         'text-align': 'left'
+    //     }
+    // }
+    // element.addEventListener('click', function(){
+    //     panel.changeVisibility(!panel.isVisible());
+    // })
+    // panel.addEventListener('click', function(event){
+    //     allOptions.map(o=>o.selected=false);
+    //     let selectedOption=allOptions.find(o=>o.value===event.target.dataset.value)
+    //     selectedOption.selected=true;
+    //     console.log('event', event.target.dataset.value);
+    // })
 
 
 
     // element.setStyles({background: 'red', color: 'blue', cursor: 'pointer', class: 'test'})
-    element.innerHTML="Hello super element nouveau!"
+    // element.innerHTML=allOptions.find(o=>o.selected).label
 
-    select.changeVisibility(false);
-    select.parentElement.appendChild(element);
-    select.parentElement.appendChild(panel);
+    // select.changeVisibility(false);
+    // select.parentElement.appendChild(element);
+    // select.parentElement.appendChild(panel);
 
 }
 
