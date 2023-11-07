@@ -21,6 +21,56 @@ class PickerOption{
         this.isSelected=this.originalOption.allAttributes.selected==''
     }
 }
+
+class PickerPanel{
+    panel:Element
+    optionsPanel:Element
+    searchPanel:Element
+    pickerState:PickerState
+
+    constructor(pickerState: PickerState){
+        this.pickerState=pickerState;
+        this.createPanel();
+
+    }
+
+    createPanel(){
+        this.panel=createElement('div')
+        this.panel.allAttributes={
+            class: 'picker-panel',
+            style:{
+                display: 'none'
+            }
+        }
+        this.searchPanel=createElement('div')
+        this.searchPanel.allAttributes={
+            class: 'picker-search'
+        }
+        let searchInput=createElement('input');
+        this.searchPanel.appendChild(searchInput);
+
+
+        // let that=this
+        // this.panel.addEventListener('click', function(event){
+        //     that.allOptions.map(o=>o.isSelected=false);
+        //     let selectedOption=that.allOptions.find(o=>o.value===event.target.dataset.value)
+        //     selectedOption.isSelected=true;
+        //     that.updatePanel();
+        //     that.updateButtonLabel();
+        //     that.panel.changeVisibility(false);
+        // })
+        // this.originalSelect.parentElement.appendChild(this.panel);
+    }
+
+    public updateOptions(){
+
+    }
+
+    public togglePanel(isVisible:boolean){
+        this.panel.changeVisibility(isVisible);
+    }
+}
+
 class PickerState{
     isMultiSelect: boolean
     originalSelect: Element
