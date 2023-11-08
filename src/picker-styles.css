@@ -9,10 +9,14 @@
   border: var(--bs-border-width) solid var(--bs-border-color);
   z-index: 10;
 }
+.picker-search{
+  margin-bottom: 5px;
+}
 
 .picker-option{
   cursor: pointer;
   padding: 3px;
+  user-select: none;
 }
 .picker-option:hover{
   background: var(--bs-light);

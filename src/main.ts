@@ -31,7 +31,18 @@ class PickerPanel{
     constructor(pickerState: PickerState){
         this.pickerState=pickerState;
         this.createPanel();
+        this.updateOptionsPanel();
+        this.pickerState.originalSelect.parentElement.appendChild(this.panel);
+    }
 
+    updateOptionsPanel(){
+        this.optionsPanel.innerHTML=''
+        for(let option of this.pickerState.allOptions){
+            let div=createElement('div');
+            div.innerHTML=option.label;
+            div.allAttributes={class: option.isSelected ? 'active picker-option': 'picker-option', data:{ value: option.value}};
+            this.optionsPanel.appendChild(div);
+        }
     }
 
     createPanel(){
@@ -47,7 +58,30 @@ class PickerPanel{
             class: 'picker-search'
         }
         let searchInput=createElement('input');
+        searchInput.allAttributes={
+            class: 'form-control',
+            placeholder: 'Search....'
+        }
         this.searchPanel.appendChild(searchInput);
+
+
+        this.panel.appendChild(this.searchPanel);
+
+        this.optionsPanel=createElement('div');
+        this.panel.appendChild(this.optionsPanel);
+
+        let that=this
+        this.optionsPanel.addEventListener('click', function(event){
+           if(event.target.matches('.picker-option')){
+               that.pickerState.allOptions.map(o=>o.isSelected=false);
+               let selectedOption=that.pickerState.allOptions.find(o=>o.value===event.target.dataset.value);
+               selectedOption.isSelected=true;
+               that.updateOptionsPanel();
+               that.togglePanel(false);
+               that.pickerState.updateButtonLabel();
+           }
+        });
+
 
 
         // let that=this
@@ -62,19 +96,19 @@ class PickerPanel{
         // this.originalSelect.parentElement.appendChild(this.panel);
     }
 
-    public updateOptions(){
-
-    }
-
     public togglePanel(isVisible:boolean){
         this.panel.changeVisibility(isVisible);
+    }
+
+    public isVisible():boolean{
+        return this.panel.isVisible();
     }
 }
 
 class PickerState{
     isMultiSelect: boolean
     originalSelect: Element
-    panel:Element
+    panel:PickerPanel
     button: Element
     allOptions: PickerOption[]
     get selectedOptions():PickerOption[]{
@@ -87,7 +121,7 @@ class PickerState{
         this.createButton();
         this.updateButtonLabel();
         this.createPanel();
-        this.updatePanel();
+        //this.updatePanel();
     }
 
     createButton(){
@@ -101,7 +135,7 @@ class PickerState{
         }
         let that=this
         this.button.addEventListener('click', function(){
-            that.panel.changeVisibility(!that.panel.isVisible());
+            that.panel.togglePanel(!that.panel.isVisible());
         })
         this.originalSelect.parentElement.appendChild(this.button);
         this.originalSelect.changeVisibility(false);
@@ -121,41 +155,23 @@ class PickerState{
 
     searchInput: Element
     createPanel(){
-        this.panel=createElement('div')
-        this.panel.allAttributes={
-            class: 'picker-panel',
-            style:{
-                display: 'none'
-            }
-        }
-        this.searchInput=createElement('input')
-        this.panel.appendChild(this.searchInput);
-        let that=this
-        this.panel.addEventListener('click', function(event){
-            that.allOptions.map(o=>o.isSelected=false);
-            let selectedOption=that.allOptions.find(o=>o.value===event.target.dataset.value)
-            selectedOption.isSelected=true;
-            that.updatePanel();
-            that.updateButtonLabel();
-            that.panel.changeVisibility(false);
-        })
-        this.originalSelect.parentElement.appendChild(this.panel);
+        this.panel=new PickerPanel(this);
     }
 
-    updatePanel(){
-        this.panel.innerHTML=''
-        for(let option of this.allOptions){
-            let div=createElement('div');
-            div.innerHTML=option.label;
-            div.allAttributes={class: option.isSelected ? 'active picker-option': 'picker-option', data:{ value: option.value}};
-            this.panel.appendChild(div);
-        }
-    }
+    // updatePanel(){
+    //     this.panel.innerHTML=''
+    //     for(let option of this.allOptions){
+    //         let div=createElement('div');
+    //         div.innerHTML=option.label;
+    //         div.allAttributes={class: option.isSelected ? 'active picker-option': 'picker-option', data:{ value: option.value}};
+    //         this.panel.appendChild(div);
+    //     }
+    // }
 
-    removePanel(){
-        this.panel.remove();
-        this.panel=null;
-    }
+    // removePanel(){
+    //     this.panel.remove();
+    //     this.panel=null;
+    // }
 }
 
 function replaceOneSelect(select: Element){
