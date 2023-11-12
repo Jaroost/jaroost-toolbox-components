@@ -51,16 +51,18 @@ class PickerPanel{
     getOptionByValue(value:String):PickerOption|null{
         return this.pickerState.allOptions.find(o=>o.value===value);
     }
+
     selectOptionByValue(value:String){
         let option=this.getOptionByValue(value)
         this.selectOption(option)
     }
+
     selectOption(option: PickerOption|null){
-        if(option){
+        if(option!==null){
             if(!this.pickerState.isMultiSelect){
                 this.pickerState.allOptions.map(o=>o.isSelected=false);
             }
-            option.isSelected=true
+            option.isSelected=!option.isSelected
             this.updateOptionsPanel();
             this.pickerState.updateButtonLabel();
         }
@@ -143,14 +145,13 @@ class PickerPanel{
     }
 
     selectPreviousOption(){
-        this
     }
 
     selectNextOption(){
 
     }
 
-    selectOption(offset=1){
+    selectPrevOrNextOption(offset=1){
 
     }
 
@@ -188,6 +189,7 @@ class PickerState{
 
     constructor(originalSelect:Element) {
         this.originalSelect=originalSelect;
+        this.isMultiSelect=originalSelect.allAttributes.multiple==='';
         this.filteredOptions=[];
         this.fillAlOptions();
         this.createButton();
@@ -214,7 +216,20 @@ class PickerState{
     }
 
     updateButtonLabel(){
-        this.button.innerHTML=this.allOptions.find(o=>o.isSelected).label
+        let selectedOptions=this.allOptions.filter(o=>o.isSelected)
+        if(selectedOptions.length>0) {
+            if(this.isMultiSelect){
+                if(selectedOptions.length==1){
+                    this.button.innerHTML = selectedOptions[0].label;
+                }else{
+                    this.button.innerHTML = `${selectedOptions.length} items selected`;
+                }
+            }else{
+                this.button.innerHTML = selectedOptions[0].label;
+            }
+        }else{
+            this.button.innerHTML='No selection'
+        }
     }
 
     fillAlOptions(){
