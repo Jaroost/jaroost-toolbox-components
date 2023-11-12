@@ -9,6 +9,7 @@ class PickerOption{
     label: string
     value: any
     isSelected: boolean
+    isPanelSelected: boolean
 
     constructor(originalOption:Element) {
         this.originalOption=originalOption;
@@ -26,7 +27,9 @@ class PickerPanel{
     panel:Element
     optionsPanel:Element
     searchPanel:Element
+    searchInput:Element
     pickerState:PickerState
+    search: string
 
     constructor(pickerState: PickerState){
         this.pickerState=pickerState;
@@ -37,11 +40,29 @@ class PickerPanel{
 
     updateOptionsPanel(){
         this.optionsPanel.innerHTML=''
-        for(let option of this.pickerState.allOptions){
+        for(let option of this.pickerState.filteredOptions){
             let div=createElement('div');
             div.innerHTML=option.label;
             div.allAttributes={class: option.isSelected ? 'active picker-option': 'picker-option', data:{ value: option.value}};
             this.optionsPanel.appendChild(div);
+        }
+    }
+
+    getOptionByValue(value:String):PickerOption|null{
+        return this.pickerState.allOptions.find(o=>o.value===value);
+    }
+    selectOptionByValue(value:String){
+        let option=this.getOptionByValue(value)
+        this.selectOption(option)
+    }
+    selectOption(option: PickerOption|null){
+        if(option){
+            if(!this.pickerState.isMultiSelect){
+                this.pickerState.allOptions.map(o=>o.isSelected=false);
+            }
+            option.isSelected=true
+            this.updateOptionsPanel();
+            this.pickerState.updateButtonLabel();
         }
     }
 
@@ -57,12 +78,22 @@ class PickerPanel{
         this.searchPanel.allAttributes={
             class: 'picker-search'
         }
-        let searchInput=createElement('input');
-        searchInput.allAttributes={
+        this.searchInput=createElement('input');
+        this.searchInput.allAttributes={
             class: 'form-control',
             placeholder: 'Search....'
         }
-        this.searchPanel.appendChild(searchInput);
+        this.searchInput.addEventListener('keyup', function(event){
+            if(event.key=='Enter'){
+                event.preventDefault();
+            }
+            that.search=this.value;
+            that.filterSearch();
+            if(that.pickerState.filteredOptions.length>0){
+                that.selectOption(that.pickerState.filteredOptions[0])
+            }
+        })
+        this.searchPanel.appendChild(this.searchInput);
 
 
         this.panel.appendChild(this.searchPanel);
@@ -73,14 +104,29 @@ class PickerPanel{
         let that=this
         this.optionsPanel.addEventListener('click', function(event){
            if(event.target.matches('.picker-option')){
-               that.pickerState.allOptions.map(o=>o.isSelected=false);
-               let selectedOption=that.pickerState.allOptions.find(o=>o.value===event.target.dataset.value);
-               selectedOption.isSelected=true;
-               that.updateOptionsPanel();
+               that.selectOptionByValue(event.target.dataset.value)
                that.togglePanel(false);
-               that.pickerState.updateButtonLabel();
            }
         });
+
+        document.body.addEventListener('keydown', function(event){
+            if(that.isVisible()){
+                console.log(event.key);
+                switch(event.key){
+                    case 'Escape':
+                        that.togglePanel(false);
+                        break
+                    case 'ArrowDown':
+                        console.log('netOption');
+                        that.selectNextOption();
+                        break
+                    case 'ArrowUp':
+                        console.log('previousOption');
+                        that.selectPreviousOption();
+                        break;
+                }
+            }
+        })
 
 
 
@@ -94,6 +140,30 @@ class PickerPanel{
         //     that.panel.changeVisibility(false);
         // })
         // this.originalSelect.parentElement.appendChild(this.panel);
+    }
+
+    selectPreviousOption(){
+        this
+    }
+
+    selectNextOption(){
+
+    }
+
+    selectOption(offset=1){
+
+    }
+
+    public filterSearch(){
+        let filtered=[]
+        for(let option of this.pickerState.allOptions){
+            if(option.label.toLowerCase().includes(this.search.toLowerCase())){
+                filtered.push(option);
+            }
+        }
+        this.pickerState.filteredOptions=filtered;
+
+        this.updateOptionsPanel();
     }
 
     public togglePanel(isVisible:boolean){
@@ -111,12 +181,14 @@ class PickerState{
     panel:PickerPanel
     button: Element
     allOptions: PickerOption[]
+    filteredOptions: PickerOption[]
     get selectedOptions():PickerOption[]{
         return this.allOptions.filter(o => o.isSelected)
     }
 
     constructor(originalSelect:Element) {
         this.originalSelect=originalSelect;
+        this.filteredOptions=[];
         this.fillAlOptions();
         this.createButton();
         this.updateButtonLabel();
@@ -149,11 +221,11 @@ class PickerState{
         let options=this.originalSelect.querySelectorAll("option")
         this.allOptions=[]
         for(let option: Element of options){
-            this.allOptions.push(new PickerOption(option))
+            let newOption=new PickerOption(option);
+            this.allOptions.push(newOption)
+            this.filteredOptions.push(newOption)
         }
     }
-
-    searchInput: Element
     createPanel(){
         this.panel=new PickerPanel(this);
     }

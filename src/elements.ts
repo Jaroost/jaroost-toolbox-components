@@ -32,7 +32,6 @@ Element.prototype.changeVisibility=function(isVisible:Boolean){
     this.allAttributes={style: {display: isVisible ? 'block' : 'none'}}
 };
 Element.prototype.isVisible=function(){
-    console.log(this.allAttributes)
     return this.allAttributes.style.display=='block'
 }
 
