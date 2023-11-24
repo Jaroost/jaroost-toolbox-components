@@ -25,3 +25,8 @@
   background: var(--bs-primary);
   color: var(--bs-light);
 }
+
+.selected{
+  background: var(--bs-secondary);
+  color: var(--bs-light);
+}

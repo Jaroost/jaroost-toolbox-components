@@ -12,6 +12,7 @@ class PickerOption{
     isPanelSelected: boolean
 
     constructor(originalOption:Element) {
+        this.isPanelSelected=false;
         this.originalOption=originalOption;
         this.setValuesWithOriginalElement();
     }
@@ -43,7 +44,13 @@ class PickerPanel{
         for(let option of this.pickerState.filteredOptions){
             let div=createElement('div');
             div.innerHTML=option.label;
-            div.allAttributes={class: option.isSelected ? 'active picker-option': 'picker-option', data:{ value: option.value}};
+            let classes=['picker-option']
+            if(option.isSelected){
+                classes.push('active')
+            }else if (option.isPanelSelected){
+                classes.push('selected')
+            }
+            div.allAttributes={class: classes.join(' '), data:{ value: option.value}};
             this.optionsPanel.appendChild(div);
         }
     }
@@ -52,17 +59,30 @@ class PickerPanel{
         return this.pickerState.allOptions.find(o=>o.value===value);
     }
 
-    selectOptionByValue(value:String){
+    selectOptionByValue(value:String, wantPanelSelect:boolean=true){
         let option=this.getOptionByValue(value)
-        this.selectOption(option)
+        this.selectOptions([option], wantPanelSelect)
     }
 
-    selectOption(option: PickerOption|null){
-        if(option!==null){
+    selectOptions(options: PickerOption[]|null, wantPanelSelect:boolean=true){
+        if(options!==null || options.length<=0){
             if(!this.pickerState.isMultiSelect){
-                this.pickerState.allOptions.map(o=>o.isSelected=false);
+                if(wantPanelSelect){
+                    this.pickerState.allOptions.map(o=>o.isPanelSelected=false);
+                }else{
+                    this.pickerState.allOptions.map(o=>o.isSelected=false);
+                }
             }
-            option.isSelected=!option.isSelected
+            if(wantPanelSelect){
+                for(let option of options){
+                    option.isPanelSelected=!option.isPanelSelected;
+                }
+
+            }else{
+                for(let option of options){
+                    option.isSelected=!option.isSelected;
+                }
+            }
             this.updateOptionsPanel();
             this.pickerState.updateButtonLabel();
         }
@@ -86,14 +106,40 @@ class PickerPanel{
             placeholder: 'Search....'
         }
         this.searchInput.addEventListener('keyup', function(event){
-            if(event.key=='Enter'){
-                event.preventDefault();
+            switch(event.key){
+                case 'Enter':
+                    that.selectOptions(that.pickerState.selectedPanelOptions, false);
+                    event.preventDefault();
+                    if(!that.pickerState.isMultiSelect){
+                        that.togglePanel(false);
+                    }
+                    break;
+                case 'Escape':
+                    that.togglePanel(false);
+                    break
+                case 'ArrowDown':
+                    console.log('netOption');
+                    that.selectNextOption();
+                    break
+                case 'ArrowUp':
+                    console.log('previousOption');
+                    that.selectPreviousOption();
+                    break;
+                default:
+                    that.search=this.value;
+                    that.filterSearch();
+                    if(that.pickerState.filteredOptions.length>0){
+                        that.selectOptions([that.pickerState.filteredOptions[0]])
+                    }
+                    break;
             }
-            that.search=this.value;
-            that.filterSearch();
-            if(that.pickerState.filteredOptions.length>0){
-                that.selectOption(that.pickerState.filteredOptions[0])
-            }
+            // if(event.key=='Enter'){
+            //     event.preventDefault();
+            //     that.selectOptions(that.pickerState.filteredOptions.filter(o=>o.isPanelSelected), false);
+            //     that.togglePanel(false);
+            //     return;
+            // }
+
         })
         this.searchPanel.appendChild(this.searchInput);
 
@@ -106,26 +152,15 @@ class PickerPanel{
         let that=this
         this.optionsPanel.addEventListener('click', function(event){
            if(event.target.matches('.picker-option')){
-               that.selectOptionByValue(event.target.dataset.value)
+               that.selectOptionByValue(event.target.dataset.value, false)
                that.togglePanel(false);
            }
         });
 
         document.body.addEventListener('keydown', function(event){
             if(that.isVisible()){
-                console.log(event.key);
-                switch(event.key){
-                    case 'Escape':
-                        that.togglePanel(false);
-                        break
-                    case 'ArrowDown':
-                        console.log('netOption');
-                        that.selectNextOption();
-                        break
-                    case 'ArrowUp':
-                        console.log('previousOption');
-                        that.selectPreviousOption();
-                        break;
+                if(event.key=='Enter'){
+                    event.preventDefault();
                 }
             }
         })
@@ -169,6 +204,14 @@ class PickerPanel{
 
     public togglePanel(isVisible:boolean){
         this.panel.changeVisibility(isVisible);
+        if(isVisible){
+            this.searchInput.focus();
+            this.searchInput.value='';
+            this.pickerState.fillAllOptions();
+            this.pickerState.selectedPanelOptions.map(o=>o.isPanelSelected=false);
+            this.pickerState.selectedOptions.map(o=>o.isPanelSelected=true);
+            this.updateOptionsPanel();
+        }
     }
 
     public isVisible():boolean{
@@ -183,15 +226,20 @@ class PickerState{
     button: Element
     allOptions: PickerOption[]
     filteredOptions: PickerOption[]
+
     get selectedOptions():PickerOption[]{
         return this.allOptions.filter(o => o.isSelected)
+    }
+
+    get selectedPanelOptions():PickerOption[]{
+        return this.allOptions.filter(o => o.isPanelSelected)
     }
 
     constructor(originalSelect:Element) {
         this.originalSelect=originalSelect;
         this.isMultiSelect=originalSelect.allAttributes.multiple==='';
         this.filteredOptions=[];
-        this.fillAlOptions();
+        this.fillAllOptions();
         this.createButton();
         this.updateButtonLabel();
         this.createPanel();
@@ -216,7 +264,7 @@ class PickerState{
     }
 
     updateButtonLabel(){
-        let selectedOptions=this.allOptions.filter(o=>o.isSelected)
+        let selectedOptions=this.selectedOptions
         if(selectedOptions.length>0) {
             if(this.isMultiSelect){
                 if(selectedOptions.length==1){
@@ -232,9 +280,10 @@ class PickerState{
         }
     }
 
-    fillAlOptions(){
+    fillAllOptions(){
         let options=this.originalSelect.querySelectorAll("option")
         this.allOptions=[]
+        this.filteredOptions=[]
         for(let option: Element of options){
             let newOption=new PickerOption(option);
             this.allOptions.push(newOption)
