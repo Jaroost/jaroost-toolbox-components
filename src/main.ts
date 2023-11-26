@@ -125,10 +125,7 @@ class PickerPanel{
                     that.togglePanel(false);
                     break
                 case 'ArrowDown':
-                    that.selectNextOption();
-                    break
                 case 'ArrowUp':
-                    that.selectPreviousOption();
                     break;
                 default:
                     that.search=this.value;
@@ -157,8 +154,16 @@ class PickerPanel{
 
         document.body.addEventListener('keydown', function(event){
             if(that.isVisible()){
-                if(event.key=='Enter'){
-                    event.preventDefault();
+                switch(event.key){
+                    case 'Enter':
+                        event.preventDefault();
+                        break;
+                    case 'ArrowDown':
+                        that.selectNextOption();
+                        break
+                    case 'ArrowUp':
+                        that.selectPreviousOption();
+                        break;
                 }
             }
         })
