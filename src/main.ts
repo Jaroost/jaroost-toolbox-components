@@ -167,6 +167,14 @@ class PickerPanel{
                 }
             }
         })
+
+        document.body.addEventListener('click', function(event){
+            if(that.isVisible()){
+                if(!that.panel.contains(event.target) && !that.pickerState.button.contains(event.target)){
+                    that.togglePanel(false);
+                }
+            }
+        })
     }
 
     selectPreviousOption(){
