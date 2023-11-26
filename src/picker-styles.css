@@ -26,7 +26,18 @@
   color: var(--bs-light);
 }
 
-.selected{
-  background: var(--bs-secondary);
-  color: var(--bs-light);
+
+.picker-selected{
+  background: var(--bs-secondary) !important;
+  color: var(--bs-light) !important;
+}
+
+.picker-active{
+  background: var(--bs-primary) !important;
+  color: var(--bs-light) !important;
+}
+
+.option-panel{
+  overflow: auto;
+  max-height: 500px;
 }

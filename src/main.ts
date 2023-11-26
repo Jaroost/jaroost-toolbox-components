@@ -10,8 +10,11 @@ class PickerOption{
     value: any
     isSelected: boolean
     isPanelSelected: boolean
+    id: number
+    static GLOBAL_ID=0
 
     constructor(originalOption:Element) {
+        this.id=PickerOption.GLOBAL_ID++;
         this.isPanelSelected=false;
         this.originalOption=originalOption;
         this.setValuesWithOriginalElement();
@@ -21,7 +24,6 @@ class PickerOption{
         this.label=this.originalOption.innerHTML;
         this.value=this.originalOption.value;
         this.isSelected=this.originalOption.selected;
-        console.log(this.isSelected, this.value);
     }
 }
 
@@ -46,14 +48,15 @@ class PickerPanel{
             let div=createElement('div');
             div.innerHTML=option.label;
             let classes=['picker-option']
-            if(option.isSelected){
-                classes.push('active')
-            }else if (option.isPanelSelected){
-                classes.push('selected')
+            if( option.isPanelSelected){
+                classes.push('picker-selected')
+            }else if (option.isSelected){
+                classes.push('picker-active')
             }
-            div.allAttributes={class: classes.join(' '), data:{ value: option.value}};
+            div.allAttributes={class: classes.join(' '), data:{ value: option.value, id: option.id}};
             this.optionsPanel.appendChild(div);
         }
+        this.scrollToPanelSelectedElement();
     }
 
     getOptionByValue(value:String):PickerOption|null{
@@ -120,11 +123,9 @@ class PickerPanel{
                     that.togglePanel(false);
                     break
                 case 'ArrowDown':
-                    console.log('netOption');
                     that.selectNextOption();
                     break
                 case 'ArrowUp':
-                    console.log('previousOption');
                     that.selectPreviousOption();
                     break;
                 default:
@@ -143,6 +144,7 @@ class PickerPanel{
         this.panel.appendChild(this.searchPanel);
 
         this.optionsPanel=createElement('div');
+        this.optionsPanel.allAttributes={class: 'option-panel'}
         this.panel.appendChild(this.optionsPanel);
 
         let that=this
@@ -160,19 +162,6 @@ class PickerPanel{
                 }
             }
         })
-
-
-
-        // let that=this
-        // this.panel.addEventListener('click', function(event){
-        //     that.allOptions.map(o=>o.isSelected=false);
-        //     let selectedOption=that.allOptions.find(o=>o.value===event.target.dataset.value)
-        //     selectedOption.isSelected=true;
-        //     that.updatePanel();
-        //     that.updateButtonLabel();
-        //     that.panel.changeVisibility(false);
-        // })
-        // this.originalSelect.parentElement.appendChild(this.panel);
     }
 
     selectPreviousOption(){
@@ -226,6 +215,16 @@ class PickerPanel{
         }
     }
 
+    scrollToPanelSelectedElement(){
+        let selectedOption=this.pickerState.selectedPanelOption;
+        if(selectedOption){
+            let selectedPanelOption=this.optionsPanel.querySelector(`[data-id="${selectedOption.id}"]`);
+            if(selectedPanelOption){
+                selectedPanelOption.scrollIntoView({block: 'center'});
+            }
+        }
+    }
+
     public isVisible():boolean{
         return this.panel.isVisible();
     }
@@ -257,7 +256,6 @@ class PickerState{
         this.createButton();
         this.updateButtonLabel();
         this.createPanel();
-        //this.updatePanel();
     }
 
     createButton(){
@@ -321,77 +319,10 @@ class PickerState{
     createPanel(){
         this.panel=new PickerPanel(this);
     }
-
-    // updatePanel(){
-    //     this.panel.innerHTML=''
-    //     for(let option of this.allOptions){
-    //         let div=createElement('div');
-    //         div.innerHTML=option.label;
-    //         div.allAttributes={class: option.isSelected ? 'active picker-option': 'picker-option', data:{ value: option.value}};
-    //         this.panel.appendChild(div);
-    //     }
-    // }
-
-    // removePanel(){
-    //     this.panel.remove();
-    //     this.panel=null;
-    // }
 }
 
 function replaceOneSelect(select: Element){
     new PickerState(select);
-    //showHideElement(select, false);
-
-    // let allOptions=[]
-    // let options=select.querySelectorAll("option")
-    // for(let option: Element of options){
-    //     console.log(option.allAttributes)
-    //     allOptions.push({
-    //         label: option.innerHTML,
-    //         value: option.value,
-    //         selected: option.allAttributes.selected==''
-    //     })
-    // }
-
-    // let panel=createElement('div')
-    // panel.allAttributes={
-    //     class: 'picker-panel',
-    // }
-    // for(let option of allOptions){
-    //     let div=createElement('div');
-    //     div.innerHTML=option.label;
-    //     div.allAttributes={class: option.selected ? 'active picker-option': 'picker-option', data:{ value: option.value}};
-    //     panel.appendChild(div);
-    // }
-    //panel.changeVisibility(false);
-
-    // let element=createElement('button');
-    // element.allAttributes={
-    //     class: 'form-control',
-    //     type: 'button',
-    //     style:{
-    //         'text-align': 'left'
-    //     }
-    // }
-    // element.addEventListener('click', function(){
-    //     panel.changeVisibility(!panel.isVisible());
-    // })
-    // panel.addEventListener('click', function(event){
-    //     allOptions.map(o=>o.selected=false);
-    //     let selectedOption=allOptions.find(o=>o.value===event.target.dataset.value)
-    //     selectedOption.selected=true;
-    //     console.log('event', event.target.dataset.value);
-    // })
-
-
-
-    // element.setStyles({background: 'red', color: 'blue', cursor: 'pointer', class: 'test'})
-    // element.innerHTML=allOptions.find(o=>o.selected).label
-
-    // select.changeVisibility(false);
-    // select.parentElement.appendChild(element);
-    // select.parentElement.appendChild(panel);
-
 }
 
 function replaceSelects(){
@@ -401,6 +332,24 @@ function replaceSelects(){
     for(let picker of pickerSelects){
         replaceOneSelect(picker);
     }
+
+
+    let add=document.getElementById('add')
+    let label=createElement('label');
+    label.innerHTML="Un super test!"
+    label.allAttributes={for: 'select'}
+    let select=createElement('select')
+    select.allAttributes={class: 'form-select picker', id: 'select'}
+    for(let i=0; i<10000; i++){
+        let newOption=createElement('option');
+        newOption.allAttributes={value: i}
+        newOption.innerHTML=`Valeur ${i}`
+        select.appendChild(newOption);
+    }
+    add.appendChild(select);
+    add.appendChild(label);
+
+    replaceOneSelect(select);
 
 
 }
