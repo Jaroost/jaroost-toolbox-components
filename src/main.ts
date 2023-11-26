@@ -289,6 +289,12 @@ class PickerState{
         let that=this
         this.button.addEventListener('click', function(){
             that.panel.togglePanel(!that.panel.isVisible());
+        });
+        this.button.addEventListener('dblclick', function(){
+            if(!that.isMultiSelect){
+                that.panel.selectNextOption();
+                that.panel.selectOptions([that.selectedPanelOption], false);
+            }
         })
         let svg=createSvg("<svg fill=\"currentColor\" class=\"picker-caret\" xmlns=\"http://www.w3.org/2000/svg\" height=\"1em\" viewBox=\"0 0 448 512\"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d=\"M201.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 274.7 86.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z\"/></svg>")
         this.buttonSelection=createElement('span');
