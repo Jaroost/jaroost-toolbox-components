@@ -6,7 +6,7 @@ import "./picker-styles.css"
 
 class PickerOption{
     originalOption: Element
-    label: string
+    label: any
     value: any
     isSelected: boolean
     isPanelSelected: boolean
@@ -21,7 +21,11 @@ class PickerOption{
     }
 
     private setValuesWithOriginalElement(){
-        this.label=this.originalOption.innerHTML;
+        if(this.originalOption.allAttributes['data-html']){
+            this.label=this.originalOption.allAttributes['data-html'];
+        }else{
+            this.label=this.originalOption.innerHTML;
+        }
         this.value=this.originalOption.value;
         this.isSelected=this.originalOption.selected;
     }
