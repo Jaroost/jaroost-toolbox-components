@@ -277,13 +277,11 @@ class PickerState{
         this.button.addEventListener('click', function(){
             that.panel.togglePanel(!that.panel.isVisible());
         })
-        let svg=createSvg("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"picker-caret\" viewBox=\"0 0 16 16\">\n" +
-            "  <path d=\"M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z\"/>\n" +
-            "</svg>")
+        let svg=createSvg("<svg fill=\"currentColor\" class=\"picker-caret\" xmlns=\"http://www.w3.org/2000/svg\" height=\"1em\" viewBox=\"0 0 448 512\"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d=\"M201.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 274.7 86.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z\"/></svg>")
         this.buttonSelection=createElement('span');
+        this.buttonSelection.allAttributes={class: 'picker-button-text'}
         this.button.appendChild(this.buttonSelection);
         this.button.appendChild(svg);
-
 
         this.originalSelect.parentElement.appendChild(this.button);
         this.originalSelect.changeVisibility(false);
