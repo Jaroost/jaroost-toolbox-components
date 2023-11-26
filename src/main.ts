@@ -1,5 +1,5 @@
 import {
-    createElement
+    createElement, createSvg
 } from "./element-tools.ts";
 import "./elements"
 import "./picker-styles.css"
@@ -114,9 +114,11 @@ class PickerPanel{
             switch(event.key){
                 case 'Enter':
                     event.preventDefault();
-                    that.selectOptions([that.pickerState.selectedPanelOption], false);
-                    if(!that.pickerState.isMultiSelect && that.isVisible() && that.pickerState.keyCounter>1){
-                        that.togglePanel(false);
+                    if(that.pickerState.keyCounter>1){
+                        that.selectOptions([that.pickerState.selectedPanelOption], false);
+                        if(!that.pickerState.isMultiSelect && that.isVisible()){
+                            that.togglePanel(false);
+                        }
                     }
                     break;
                 case 'Escape':
@@ -139,8 +141,6 @@ class PickerPanel{
 
         })
         this.searchPanel.appendChild(this.searchInput);
-
-
         this.panel.appendChild(this.searchPanel);
 
         this.optionsPanel=createElement('div');
@@ -180,6 +180,9 @@ class PickerPanel{
             if(index!=-1){
                 index+=offset
                 index%=this.pickerState.filteredOptions.length
+                if(index==-1){
+                    index=this.pickerState.filteredOptions.length-1;
+                }
                 this.pickerState.filteredOptions.map(o=>o.isPanelSelected=false);
                 this.pickerState.filteredOptions[index].isPanelSelected=true;
             }
@@ -195,7 +198,6 @@ class PickerPanel{
             }
         }
         this.pickerState.filteredOptions=filtered;
-
         this.updateOptionsPanel();
     }
 
@@ -208,6 +210,9 @@ class PickerPanel{
             this.pickerState.fillAllOptions();
             if(this.pickerState.selectedOptions.length>0){
                 this.pickerState.selectedOptions[0].isPanelSelected=true;
+            }
+            if(!this.pickerState.selectedPanelOption){
+                this.pickerState.allOptions[0].isPanelSelected=true;
             }
             this.updateOptionsPanel();
         }else{
@@ -235,6 +240,7 @@ class PickerState{
     originalSelect: Element
     panel:PickerPanel
     button: Element
+    buttonSelection: Element
     allOptions: PickerOption[]
     filteredOptions: PickerOption[]
     keyCounter:Number
@@ -261,7 +267,7 @@ class PickerState{
     createButton(){
         this.button=createElement('button');
         this.button.allAttributes={
-            class: 'form-control',
+            class: 'form-control picker-button',
             type: 'button',
             style:{
                 'text-align': 'left'
@@ -271,6 +277,14 @@ class PickerState{
         this.button.addEventListener('click', function(){
             that.panel.togglePanel(!that.panel.isVisible());
         })
+        let svg=createSvg("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"picker-caret\" viewBox=\"0 0 16 16\">\n" +
+            "  <path d=\"M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z\"/>\n" +
+            "</svg>")
+        this.buttonSelection=createElement('span');
+        this.button.appendChild(this.buttonSelection);
+        this.button.appendChild(svg);
+
+
         this.originalSelect.parentElement.appendChild(this.button);
         this.originalSelect.changeVisibility(false);
     }
@@ -280,15 +294,15 @@ class PickerState{
         if(selectedOptions.length>0) {
             if(this.isMultiSelect){
                 if(selectedOptions.length==1){
-                    this.button.innerHTML = selectedOptions[0].label;
+                    this.buttonSelection.innerHTML = selectedOptions[0].label;
                 }else{
-                    this.button.innerHTML = `${selectedOptions.length} items selected`;
+                    this.buttonSelection.innerHTML = `${selectedOptions.length} items selected`;
                 }
             }else{
-                this.button.innerHTML = selectedOptions[0].label;
+                this.buttonSelection.innerHTML = selectedOptions[0].label;
             }
         }else{
-            this.button.innerHTML='No selection'
+            this.buttonSelection.innerHTML='No selection'
         }
         this.updateUnderlyingSelect()
     }

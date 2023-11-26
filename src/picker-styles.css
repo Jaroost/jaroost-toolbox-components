@@ -20,16 +20,16 @@
 }
 .picker-option:hover{
   background: var(--bs-light);
+  color: var(--bs-dark);
 }
 .picker-option.active{
   background: var(--bs-primary);
   color: var(--bs-light);
 }
 
-
 .picker-selected{
-  background: var(--bs-secondary) !important;
-  color: var(--bs-light) !important;
+  background: var(--bs-secondary);
+  color: var(--bs-light);
 }
 
 .picker-active{
@@ -40,4 +40,14 @@
 .option-panel{
   overflow: auto;
   max-height: 500px;
+}
+
+.picker-button{
+}
+
+.picker-caret{
+  color: gray;
+  float: right;
+  margin-top: -5px;
+  margin-top: -5px;
 }
