@@ -20,7 +20,8 @@ class PickerOption{
     private setValuesWithOriginalElement(){
         this.label=this.originalOption.innerHTML;
         this.value=this.originalOption.value;
-        this.isSelected=this.originalOption.allAttributes.selected==''
+        this.isSelected=this.originalOption.selected;
+        console.log(this.isSelected, this.value);
     }
 }
 
@@ -106,11 +107,12 @@ class PickerPanel{
             placeholder: 'Search....'
         }
         this.searchInput.addEventListener('keyup', function(event){
+            that.pickerState.keyCounter+=1
             switch(event.key){
                 case 'Enter':
-                    that.selectOptions(that.pickerState.selectedPanelOptions, false);
                     event.preventDefault();
-                    if(!that.pickerState.isMultiSelect){
+                    that.selectOptions([that.pickerState.selectedPanelOption], false);
+                    if(!that.pickerState.isMultiSelect && that.isVisible() && that.pickerState.keyCounter>1){
                         that.togglePanel(false);
                     }
                     break;
@@ -133,12 +135,6 @@ class PickerPanel{
                     }
                     break;
             }
-            // if(event.key=='Enter'){
-            //     event.preventDefault();
-            //     that.selectOptions(that.pickerState.filteredOptions.filter(o=>o.isPanelSelected), false);
-            //     that.togglePanel(false);
-            //     return;
-            // }
 
         })
         this.searchPanel.appendChild(this.searchInput);
@@ -180,14 +176,26 @@ class PickerPanel{
     }
 
     selectPreviousOption(){
+        this.selectPrevOrNextOption(-1)
     }
 
     selectNextOption(){
-
+        this.selectPrevOrNextOption()
     }
 
     selectPrevOrNextOption(offset=1){
-
+        let panelOption=this.pickerState.selectedPanelOption
+        if(panelOption){
+            let value=panelOption.value as string
+            let index = this.pickerState.filteredOptions.findIndex(o=>o.value===value)
+            if(index!=-1){
+                index+=offset
+                index%=this.pickerState.filteredOptions.length
+                this.pickerState.filteredOptions.map(o=>o.isPanelSelected=false);
+                this.pickerState.filteredOptions[index].isPanelSelected=true;
+            }
+        }
+        this.updateOptionsPanel();
     }
 
     public filterSearch(){
@@ -205,12 +213,16 @@ class PickerPanel{
     public togglePanel(isVisible:boolean){
         this.panel.changeVisibility(isVisible);
         if(isVisible){
+            this.pickerState.keyCounter=0
             this.searchInput.focus();
             this.searchInput.value='';
             this.pickerState.fillAllOptions();
-            this.pickerState.selectedPanelOptions.map(o=>o.isPanelSelected=false);
-            this.pickerState.selectedOptions.map(o=>o.isPanelSelected=true);
+            if(this.pickerState.selectedOptions.length>0){
+                this.pickerState.selectedOptions[0].isPanelSelected=true;
+            }
             this.updateOptionsPanel();
+        }else{
+            this.pickerState.button.focus();
         }
     }
 
@@ -226,16 +238,18 @@ class PickerState{
     button: Element
     allOptions: PickerOption[]
     filteredOptions: PickerOption[]
+    keyCounter:Number
 
     get selectedOptions():PickerOption[]{
         return this.allOptions.filter(o => o.isSelected)
     }
 
-    get selectedPanelOptions():PickerOption[]{
-        return this.allOptions.filter(o => o.isPanelSelected)
+    get selectedPanelOption():PickerOption|null{
+        return this.allOptions.find(o => o.isPanelSelected)
     }
 
     constructor(originalSelect:Element) {
+        this.keyCounter=0;
         this.originalSelect=originalSelect;
         this.isMultiSelect=originalSelect.allAttributes.multiple==='';
         this.filteredOptions=[];
@@ -277,6 +291,20 @@ class PickerState{
             }
         }else{
             this.button.innerHTML='No selection'
+        }
+        this.updateUnderlyingSelect()
+    }
+
+    updateUnderlyingSelect(){
+        //this.originalSelect.changeVisibility(true);
+        let allOptions=this.originalSelect.querySelectorAll('option')
+        let allSelectedValues=this.selectedOptions.map(o=>o.value);
+        for(let option of allOptions){
+            if(allSelectedValues.includes(option.value)){
+                option.selected=true
+            }else{
+                option.selected=false
+            }
         }
     }
 
