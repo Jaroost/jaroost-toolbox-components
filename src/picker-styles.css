@@ -24,10 +24,6 @@
   background: var(--bs-light);
   color: var(--bs-dark);
 }
-.picker-option.active{
-  background: var(--bs-primary);
-  color: var(--bs-light);
-}
 
 .picker-selected{
   background: var(--bs-secondary);
